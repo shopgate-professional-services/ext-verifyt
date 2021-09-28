@@ -1,0 +1,17 @@
+{
+  "name": "@shopgate-project/verifyt",
+  "version": "1.0.0",
+  "description": "",
+  "license": "Apache-2.0",
+  "scripts": {
+    "lint": "eslint --parser babel-eslint --ignore-path ../.gitignore --ext .js --ext .jsx ."
+  },
+  "devDependencies": {
+    "@shopgate/engage": "^6.11.0",
+    "@shopgate/eslint-config": "^6.11.0",
+    "eslint": "^5.12.0"
+  },
+  "peerDependencies": {
+    "@shopgate/engage": "^6.11.0"
+  }
+}
