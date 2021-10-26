@@ -1,5 +1,10 @@
-import { appDidStart$, logger } from '@shopgate/engage/core';
+import { main$, appDidStart$, logger } from '@shopgate/engage/core';
 import { productIsReady$ } from '@shopgate/pwa-tracking/streams/product';
+import { getProductRoute } from '@shopgate/engage/product';
+import { getCurrentQuery } from '@shopgate/pwa-common/selectors/router';
+import {
+  OPEN_DEEP_LINK,
+} from '@shopgate/pwa-common/constants/ActionTypes';
 import { sdkUrl, clientId } from './config';
 
 export default (subscribe) => {
@@ -10,6 +15,7 @@ export default (subscribe) => {
       logger.warn('verifyt: No sdk url configured');
       return;
     }
+
     const script = document.createElement('script');
     script.type = 'text/javascript';
     script.async = true;
@@ -18,46 +24,85 @@ export default (subscribe) => {
     script.src = sdkUrl;
     const parent = document.getElementsByTagName('head')[0];
     parent.appendChild(script);
+
+    /*
+    window.VerifytClient.onRecommendation((data) => {
+      console.log('Recommended size is ', data.sizingValue);
+    });
+     */
   });
 
-    return;
-  subscribe(productIsReady$, ({ dispatch, action }) => {
-    console.warn(action);
-    return;
+  subscribe(productIsReady$, ({ dispatch, action, getState }) => {
+    console.warn(action, getState());
 
+    const state = getState();
+
+    const { widget_init_payload = null } = getCurrentQuery(state) || {};
+
+    // router.currentRoute.query.widget_init_payload
+
+    const { productData } = action;
     // TODO: check url for GET param widget_init_payload and init with it
 
-    if (window.VerifytClient && typeof window.VerifytClient.init === 'function') {
+    console.warn(`shopgate-31490:/${getProductRoute(productData.id)}`);
 
-      window.VerifytClient.init({
-        client_id: clientId,
-        sku: '<sku-of-your-product>',
-        product_image_url: '<url-path-to-product-image>', // optional
-        ecomm_integ: {
-          redirect_uri: '<redirect-uri>',
-          widget_init_payload: null,
-          webview_mode: true,
-        },
-        product_identifier: {
-          type: '<identifier-type>',
-          value: '<product-identifier-value>',
-        },
-      });
+    if (window.VerifytClient && typeof window.VerifytClient.init === 'function') {
+      setTimeout(() => {
+        window.VerifytClient.onRecommendation((data) => {
+          //console.log('Recommended size is ', data.sizingValue);
+          console.log('VerifytClient.init Recommended size is ', data);
+        });
+
+        console.warn('VerifytClient.init');
+        window.VerifytClient.init({
+          product_identifier: {
+            type: 'sku_group',
+            value: '320440', // productData.id,
+          },
+          client_id: clientId,
+          // sku: productData.id,
+          sku: '320440',
+          product_image_url: productData.featuredImageUrl, // optional
+          ecomm_integ: {
+            redirect_uri: `shopgate-31490:/${getProductRoute(productData.id)}`,
+            widget_init_payload,
+            webview_mode: true,
+          },
+        });
+      }, 100);
+
     } else {
       window.verifytReady = function () {
+        console.warn('verifytReady subscriptions');
+        window.VerifytClient.init({
+          product_identifier: {
+            type: 'sku_group',
+            value: '320440', // productData.id,
+          },
+          client_id: clientId,
+          product_image_url: productData.featuredImageUrl, // optional
+          ecomm_integ: {
+            redirect_uri: `shopgate-31490:/${getProductRoute(productData.id)}`,
+            widget_init_payload,
+            webview_mode: true,
+          },
+        });
 
+        window.VerifytClient.onRecommendation((data) => {
+          //console.log('Recommended size is ', data.sizingValue);
+          console.log('verifytReady subscriptions Recommended size is ', data);
+        });
       };
+
     }
   });
-/*
+
+  const deeplinkOpened$ = main$
+    .filter(({ action }) => action.type === OPEN_DEEP_LINK);
+
   subscribe(deeplinkOpened$, ({ dispatch, action }) => {
-    console.warn(action.payload.link);
-
-    // TODO:
-    const deeplinkOpened$ = main$
-      .filter(({ action }) => action.type === OPEN_DEEP_LINK);
+    console.warn('deeplinkOpened$', action);
+    // action.payload.link
   });
-
- */
 };
 
