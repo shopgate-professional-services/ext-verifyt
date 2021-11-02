@@ -1,4 +1,5 @@
 import { main$, appDidStart$, logger } from '@shopgate/engage/core';
+import { openPageExtern } from '@shopgate/pwa-core';
 import { productIsReady$ } from '@shopgate/pwa-tracking/streams/product';
 import { getProductRoute } from '@shopgate/engage/product';
 import { getCurrentQuery } from '@shopgate/pwa-common/selectors/router';
@@ -6,6 +7,7 @@ import {
   OPEN_DEEP_LINK,
 } from '@shopgate/pwa-common/constants/ActionTypes';
 import { sdkUrl, clientId } from './config';
+import { setVerifytSize } from './action-creators';
 
 export default (subscribe) => {
   const ready = false;
@@ -48,6 +50,13 @@ export default (subscribe) => {
 
     if (window.VerifytClient && typeof window.VerifytClient.init === 'function') {
       setTimeout(() => {
+        window.VerifytClient.openUrlHandler(({ url }) => {
+          console.warn('VerifytClient.init openUrlHandler', url);
+          openPageExtern({
+            src: url,
+          });
+        });
+
         window.VerifytClient.onRecommendation((data) => {
           //console.log('Recommended size is ', data.sizingValue);
           console.log('VerifytClient.init Recommended size is ', data);
@@ -88,9 +97,24 @@ export default (subscribe) => {
           },
         });
 
+        window.VerifytClient.openUrlHandler(({ url }) => {
+          console.warn('verifytReady subscriptions openUrlHandler', url);
+          openPageExtern({
+            src: url,
+          });
+        });
+
         window.VerifytClient.onRecommendation((data) => {
           //console.log('Recommended size is ', data.sizingValue);
           console.log('verifytReady subscriptions Recommended size is ', data);
+
+          // dispatch(setVerifytSize(data.size));
+          dispatch(setVerifytSize('9.5'));
+
+          // TODO: add reducer + selector
+          // component use select() from productContext on prop change
+
+          // size: "USM 9.5"
         });
       };
 

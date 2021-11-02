@@ -1,11 +1,11 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useContext } from 'react';
+import { ProductContext, VariantContext } from '@shopgate/engage/product';
 import styles from './style';
 
 /**
  * @returns {JSX}
  */
 const VerifytButton = () => {
-
   useEffect(() => {
     console.warn('VerifytButton did mount');
     if (window.VerifytClient) {

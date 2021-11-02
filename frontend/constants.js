@@ -1,0 +1,1 @@
+export const SET_VERIFYT_SIZE = 'SET_VERIFYT_SIZE';
