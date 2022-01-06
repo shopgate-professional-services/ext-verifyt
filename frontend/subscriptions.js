@@ -3,6 +3,7 @@ import { openPageExtern } from '@shopgate/pwa-core';
 import { productIsReady$ } from '@shopgate/pwa-tracking/streams/product';
 import { getProductRoute } from '@shopgate/engage/product';
 import { getCurrentQuery } from '@shopgate/pwa-common/selectors/router';
+import { shopNumber } from '@shopgate/pwa-common/helpers/config';
 import {
   OPEN_DEEP_LINK,
 } from '@shopgate/pwa-common/constants/ActionTypes';
@@ -34,19 +35,40 @@ export default (subscribe) => {
      */
   });
 
-  subscribe(productIsReady$, ({ dispatch, action, getState }) => {
-    console.warn(action, getState());
+  const onRecommendation = (dispatch, data) => {
+    console.log('verifytReady subscriptions Recommended size is ', data);
+    // dispatch(setVerifytSize(data.size));
+    dispatch(setVerifytSize('9.5'));
+  };
 
-    const state = getState();
-
+  const getInitData = (state, action) => {
+    // eslint-disable-next-line camelcase
     const { widget_init_payload = null } = getCurrentQuery(state) || {};
 
     // router.currentRoute.query.widget_init_payload
 
     const { productData } = action;
-    // TODO: check url for GET param widget_init_payload and init with it
 
-    console.warn(`shopgate-31490:/${getProductRoute(productData.id)}`);
+    console.warn(`shopgate-${shopNumber}:/${getProductRoute(productData.id)}`);
+    return {
+      product_identifier: {
+        type: 'sku_group',
+        value: '320440', // productData.id,
+      },
+      client_id: clientId,
+      // sku: productData.id,
+      sku: '320440',
+      product_image_url: productData.featuredImageUrl, // optional
+      ecomm_integ: {
+        redirect_uri: `shopgate-${shopNumber}:/${getProductRoute(productData.id)}`,
+        widget_init_payload,
+        webview_mode: true,
+      },
+    };
+  };
+
+  subscribe(productIsReady$, ({ dispatch, action, getState }) => {
+    console.warn(action, getState());
 
     if (window.VerifytClient && typeof window.VerifytClient.init === 'function') {
       setTimeout(() => {
@@ -58,44 +80,20 @@ export default (subscribe) => {
         });
 
         window.VerifytClient.onRecommendation((data) => {
-          //console.log('Recommended size is ', data.sizingValue);
+          // console.log('Recommended size is ', data.sizingValue);
           console.log('VerifytClient.init Recommended size is ', data);
+          onRecommendation(dispatch, data);
         });
 
-        console.warn('VerifytClient.init');
-        window.VerifytClient.init({
-          product_identifier: {
-            type: 'sku_group',
-            value: '320440', // productData.id,
-          },
-          client_id: clientId,
-          // sku: productData.id,
-          sku: '320440',
-          product_image_url: productData.featuredImageUrl, // optional
-          ecomm_integ: {
-            redirect_uri: `shopgate-31490:/${getProductRoute(productData.id)}`,
-            widget_init_payload,
-            webview_mode: true,
-          },
-        });
+        const initData = getInitData(getState(), action);
+        console.warn('VerifytClient.init', initData);
+        window.VerifytClient.init(initData);
       }, 100);
-
     } else {
       window.verifytReady = function () {
-        console.warn('verifytReady subscriptions');
-        window.VerifytClient.init({
-          product_identifier: {
-            type: 'sku_group',
-            value: '320440', // productData.id,
-          },
-          client_id: clientId,
-          product_image_url: productData.featuredImageUrl, // optional
-          ecomm_integ: {
-            redirect_uri: `shopgate-31490:/${getProductRoute(productData.id)}`,
-            widget_init_payload,
-            webview_mode: true,
-          },
-        });
+        const initData = getInitData(getState(), action);
+        console.warn('verifytReady subscriptions.init', initData);
+        window.VerifytClient.init(initData);
 
         window.VerifytClient.openUrlHandler(({ url }) => {
           console.warn('verifytReady subscriptions openUrlHandler', url);
@@ -104,20 +102,8 @@ export default (subscribe) => {
           });
         });
 
-        window.VerifytClient.onRecommendation((data) => {
-          //console.log('Recommended size is ', data.sizingValue);
-          console.log('verifytReady subscriptions Recommended size is ', data);
-
-          // dispatch(setVerifytSize(data.size));
-          dispatch(setVerifytSize('9.5'));
-
-          // TODO: add reducer + selector
-          // component use select() from productContext on prop change
-
-          // size: "USM 9.5"
-        });
+        window.VerifytClient.onRecommendation(data => onRecommendation(dispatch, data));
       };
-
     }
   });
 

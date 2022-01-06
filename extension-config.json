@@ -1,6 +1,6 @@
 {
   "id": "@shopgate-project/verifyt",
-  "version": "1.0.0-beta.10",
+  "version": "1.0.0-beta.12",
   "components": [
     {
       "id": "Subscribers",
