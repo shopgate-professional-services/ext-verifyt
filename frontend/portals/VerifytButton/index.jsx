@@ -1,5 +1,4 @@
-import React, { useEffect, useContext } from 'react';
-import { ProductContext, VariantContext } from '@shopgate/engage/product';
+import React, { useEffect } from 'react';
 import styles from './style';
 
 /**
@@ -21,7 +20,6 @@ const VerifytButton = () => {
 
   return (
     <div>
-      <h1>verifyt SDK</h1>
       <verifyt-sdk></verifyt-sdk>
     </div>
   );

@@ -1,7 +1,7 @@
 import { SET_VERIFYT_SIZE } from '../constants';
 
 /**
- * @param {string} size
+ * @param {string} size size
  * @return {Object}
  */
 export const setVerifytSize = size => ({

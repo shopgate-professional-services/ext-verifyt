@@ -7,7 +7,7 @@ import { shopNumber } from '@shopgate/pwa-common/helpers/config';
 import {
   OPEN_DEEP_LINK,
 } from '@shopgate/pwa-common/constants/ActionTypes';
-import { sdkUrl, clientId } from './config';
+import { sdkUrl, clientId, privacyUrl } from './config';
 import { setVerifytSize } from './action-creators';
 
 export default (subscribe) => {
@@ -37,8 +37,8 @@ export default (subscribe) => {
 
   const onRecommendation = (dispatch, data) => {
     console.log('verifytReady subscriptions Recommended size is ', data);
-    // dispatch(setVerifytSize(data.size));
-    dispatch(setVerifytSize('9.5'));
+    dispatch(setVerifytSize(data.size));
+    //dispatch(setVerifytSize('9.5'));
   };
 
   const getInitData = (state, action) => {
@@ -53,12 +53,15 @@ export default (subscribe) => {
     return {
       product_identifier: {
         type: 'sku_group',
-        value: '320440', // productData.id,
+        value: productData.id, // productData.id,
       },
       client_id: clientId,
       // sku: productData.id,
-      sku: '320440',
+      sku: productData.id,
       product_image_url: productData.featuredImageUrl, // optional
+      privacy_notice: {
+        url: privacyUrl,
+      },
       ecomm_integ: {
         redirect_uri: `shopgate-${shopNumber}:/${getProductRoute(productData.id)}`,
         widget_init_payload,
