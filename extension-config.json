@@ -1,0 +1,46 @@
+{
+  "id": "@shopgate-project/verifyt",
+  "version": "1.0.0-beta.13",
+  "components": [
+    {
+      "id": "Subscribers",
+      "path": "frontend/subscriptions.js",
+      "type": "subscribers"
+    },
+    {
+      "type": "portals",
+      "target": "product.variant-select.before",
+      "path": "frontend/portals/VerifytButton",
+      "id": "VerifytButton"
+    }
+  ],
+  "configuration": {
+    "sdkUrl": {
+      "type": "admin",
+      "destination": "frontend",
+      "default": "https://websdk.verifyt.com/verifyt-sdk.js",
+      "params": {
+        "type": "text",
+        "label": "Url of verifyt JavaScript sdk"
+      }
+    },
+    "clientId": {
+      "type": "admin",
+      "destination": "frontend",
+      "default": "ma7nmTKjXV1im0M2CIlxNBV2780ENLeXBcXcXptQ",
+      "params": {
+        "type": "text",
+        "label": "verifyt client_id"
+      }
+    },
+    "privacyUrl": {
+      "type": "admin",
+      "destination": "frontend",
+      "default": "https://www.mizunousa.com/privacy",
+      "params": {
+        "type": "text",
+        "label": "Url of the privacy page that should be passed to verifytSDK"
+      }
+    }
+  }
+}
